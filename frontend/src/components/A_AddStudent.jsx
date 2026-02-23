@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import NavBar from './NavBar';
 import DatePicker from './DatePicker';
+import CalendarModal from './CalendarModal';
 
 
 function A_AddStudent() {
@@ -21,6 +22,7 @@ function A_AddStudent() {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [editForm, setEditForm] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const openEditModal = (s) => {
     setSelectedStudent(s);
@@ -91,7 +93,7 @@ function A_AddStudent() {
       .then((result) => {
         if (result.success && Array.isArray(result.data)) setStudents(result.data);
       })
-      .catch(() => {});
+      .catch(() => { });
   };
 
   useEffect(() => {
@@ -333,8 +335,21 @@ function A_AddStudent() {
 
                 {/* วันเกิด */}
                 <div className="flex items-center gap-4 col-span-2">
-                  <label className="text-lg font-semibold w-40">วัน/เดือน/ปี เกิด</label>
-                  <DatePicker value={birthDate} onChange={setBirthDate} />
+                  <div className="flex items-center gap-4 col-span-2">
+                    <label className="text-lg font-semibold w-40">
+                      วัน/เดือน/ปี เกิด
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowCalendar(true)}
+                      className="border px-4 py-2 w-60 text-left shadow rounded"
+                    >
+                      {birthDate
+                        ? birthDate.toLocaleDateString('th-TH')
+                        : 'เลือกวันเกิด'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -575,6 +590,13 @@ function A_AddStudent() {
           </div>
           <div className="modal-backdrop" onClick={() => setCsvSuccessAccounts(null)} aria-hidden />
         </div>
+      )}
+      {showCalendar && (
+        <CalendarModal
+          value={birthDate}
+          onClose={() => setShowCalendar(false)}
+          onSelect={(date) => setBirthDate(date)}
+        />
       )}
     </>
   );

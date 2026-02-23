@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import NavBar from './NavBar'
 import DatePicker from './DatePicker';
+import CalendarModal from './CalendarModal';
 
 
 function A_AddTeacher() {
@@ -22,6 +23,7 @@ function A_AddTeacher() {
   const [preview, setPreview] = useState("/avatar-placeholder.jpg");
   const [errorMessage, setErrorMessage] = useState({ text: '', isError: false });
   const [csvSuccessAccounts, setCsvSuccessAccounts] = useState(null);
+  const [showCalendar,setShowCalendar] = useState(false);
 
   const openEditModal = (t) => {
     setSelectedTeacher(t);
@@ -337,14 +339,21 @@ function A_AddTeacher() {
 
                 {/* วันเกิด */}
                 <div className="flex items-center gap-4 col-span-2">
-                  <label className="text-lg font-semibold w-40">
-                    วัน/เดือน/ปี เกิด
-                  </label>
+                <div className="flex items-center gap-4 col-span-2">
+  <label className="text-lg font-semibold w-40">
+    วัน/เดือน/ปี เกิด
+  </label>
 
-                  <DatePicker
-                    value={birthDate}
-                    onChange={setBirthDate}
-                  />
+  <button
+    type="button"
+    onClick={()=>setShowCalendar(true)}
+    className="border px-4 py-2 w-60 text-left shadow rounded"
+  >
+    {birthDate
+      ? birthDate.toLocaleDateString('th-TH')
+      : 'เลือกวันเกิด'}
+  </button>
+</div>
                 </div>
 
               </div>
@@ -528,6 +537,13 @@ function A_AddTeacher() {
           <div className="modal-backdrop" onClick={() => setCsvSuccessAccounts(null)} aria-hidden />
         </div>
       )}
+      {showCalendar && (
+        <CalendarModal
+        value={birthDate}
+        onClose={()=>setShowCalendar(false)}
+        onSelect={(date)=>setBirthDate(date)}
+        />
+        )}
     </>
   )
 }
