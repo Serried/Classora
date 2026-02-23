@@ -279,7 +279,7 @@ router.put('/classrooms/:classID/schedule', express.json(), handle(async (req, r
   const [subjRows] = await pool.query(`SELECT cs.subjectID, s.credit FROM ClassroomSubject cs JOIN Subject s ON cs.subjectID = s.subjectID WHERE cs.classID = ? AND cs.year = ? AND cs.term = ?`, [cid, y, t]);
   for (const row of subjRows) {
     const h = hoursBySubj[row.subjectID] || 0, cr = parseFloat(row.credit) || 0;
-    if (h > cr) {
+    if (h > cr * 2) {
       const [[n]] = await pool.query('SELECT subjectName FROM Subject WHERE subjectID = ?', [row.subjectID]);
       return bad(res, `รายวิชา "${n?.subjectName || row.subjectID}" ใช้ชั่วโมง (${h}) เกินหน่วยกิต (${cr})`);
     }

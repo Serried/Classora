@@ -108,7 +108,7 @@ function ScheduleAssignment({ classrooms, fetchSubjects, toastMsg, toastSuccess,
     if (!sub) return;
     const used = hoursUsedBySubject[sub.subjectID] || 0;
     const credit = parseFloat(sub.credit) || 0;
-    if (used >= credit) {
+    if (used >= credit * 2) {
       toastMsg(`รายวิชา "${sub.subjectName}" ใช้ชั่วโมงครบแล้ว (${credit} ชม.)`);
       toastSuccess(false);
       setTimeout(() => toastMsg(null), 4000);
@@ -208,7 +208,7 @@ function ScheduleAssignment({ classrooms, fetchSubjects, toastMsg, toastSuccess,
               >
                 <span className="font-medium">{s.subjectName}</span>
                 <span className="text-sm text-gray-500 ml-2">
-                  ({hoursUsedBySubject[s.subjectID] || 0}/{s.credit} ชม.)
+                  ({hoursUsedBySubject[s.subjectID] || 0}/{s.credit* 2 } ชม.)
                 </span>
               </div>
             ))}
