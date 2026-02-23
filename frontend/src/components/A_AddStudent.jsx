@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import NavBar from './NavBar';
 import DatePicker from './DatePicker';
 import CalendarModal from './CalendarModal';
+import { isValidThaiName, isValidEnglishName } from '../utils/nameValidation';
 
 
 function A_AddStudent() {
@@ -180,8 +181,44 @@ function A_AddStudent() {
     setErrorMessage({ text: '', isError: false });
     setGeneratedPassword(null);
 
+    if (!thaiFirstName.trim() || !thaiLastName.trim()) {
+      setErrorMessage({ text: 'กรุณากรอกชื่อ-นามสกุล (ไทย) ให้ครบ', isError: true });
+      return;
+    }
+    if (!isValidThaiName(thaiFirstName)) {
+      setErrorMessage({ text: 'ชื่อ (ไทย) ต้องเป็นภาษาไทยเท่านั้น', isError: true });
+      return;
+    }
+    if (!isValidThaiName(thaiLastName)) {
+      setErrorMessage({ text: 'นามสกุล (ไทย) ต้องเป็นภาษาไทยเท่านั้น', isError: true });
+      return;
+    }
     if (!firstName.trim() || !lastName.trim()) {
-      setErrorMessage({ text: 'กรุณากรอกชื่อ-นามสกุล (English) ให้ครบ', isError: true });
+      setErrorMessage({ text: 'กรุณากรอกชื่อ-นามสกุล (ภาษาอังกฤษ) ให้ครบ', isError: true });
+      return;
+    }
+    if (!isValidEnglishName(firstName)) {
+      setErrorMessage({ text: 'ชื่อ (ภาษาอังกฤษ) ต้องเป็นภาษาอังกฤษเท่านั้น', isError: true });
+      return;
+    }
+    if (!isValidEnglishName(lastName)) {
+      setErrorMessage({ text: 'นามสกุล (ภาษาอังกฤษ) ต้องเป็นภาษาอังกฤษเท่านั้น', isError: true });
+      return;
+    }
+    if (!email.trim()) {
+      setErrorMessage({ text: 'กรุณากรอกอีเมล', isError: true });
+      return;
+    }
+    if (!phone.trim()) {
+      setErrorMessage({ text: 'กรุณากรอกเบอร์ติดต่อ', isError: true });
+      return;
+    }
+    if (!address.trim()) {
+      setErrorMessage({ text: 'กรุณากรอกที่อยู่', isError: true });
+      return;
+    }
+    if (!birthDate) {
+      setErrorMessage({ text: 'กรุณาเลือกวันเกิด', isError: true });
       return;
     }
     if (!avatarFile) {
@@ -192,15 +229,13 @@ function A_AddStudent() {
     const formData = new FormData();
     formData.append('first_name', firstName.trim());
     formData.append('last_name', lastName.trim());
-    if (thaiFirstName.trim()) formData.append('thai_first_name', thaiFirstName.trim());
-    if (thaiLastName.trim()) formData.append('thai_last_name', thaiLastName.trim());
+    formData.append('thai_first_name', thaiFirstName.trim());
+    formData.append('thai_last_name', thaiLastName.trim());
     formData.append('gender', gender);
-    formData.append('tel', phone);
+    formData.append('tel', phone.trim());
     formData.append('email', email.trim());
-    formData.append('adress', address);
-    if (birthDate) {
-      formData.append('dob', birthDate.toISOString().split('T')[0]);
-    }
+    formData.append('adress', address.trim());
+    formData.append('dob', birthDate.toISOString().split('T')[0]);
     formData.append('avatar', avatarFile);
 
     try {
@@ -258,35 +293,39 @@ function A_AddStudent() {
           <form onSubmit={handleSubmit}>
             {/* ชื่อ-นามสกุล (thai) */}
             <div className="flex items-center gap-6 mb-4">
-              <span className="text-lg font-semibold w-32">ชื่อ-นามสกุล (ไทย)</span>
+              <span className="text-lg font-semibold w-32">ชื่อ-นามสกุล (ไทย) <span className="text-red-500">*</span></span>
               <input
                 value={thaiFirstName}
                 onChange={(e) => setThaiFirstName(e.target.value)}
                 className="border px-4 py-2 flex-1 shadow"
                 placeholder="ชื่อภาษาไทย"
+                required
               />
               <input
                 value={thaiLastName}
                 onChange={(e) => setThaiLastName(e.target.value)}
                 className="border px-4 py-2 flex-1 shadow"
                 placeholder="นามสกุลภาษาไทย"
+                required
               />
             </div>
 
             {/* ชื่อ-นามสกุล (eng) */}
             <div className="flex items-center gap-6 mb-6">
-              <span className="text-lg font-semibold w-32">ชื่อ-นามสกุล (อังกฤษ)</span>
+              <span className="text-lg font-semibold w-32">ชื่อ-นามสกุล (อังกฤษ) <span className="text-red-500">*</span></span>
               <input
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 className="border px-4 py-2 flex-1 shadow"
                 placeholder="ชื่อภาษาอังกฤษ"
+                required
               />
               <input
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 className="border px-4 py-2 flex-1 shadow"
                 placeholder="นามสกุลภาษาอังกฤษ"
+                required
               />
             </div>
 
@@ -327,37 +366,40 @@ function A_AddStudent() {
 
                 {/* อีเมล */}
                 <div className="flex items-center gap-4">
-                  <label className="text-lg font-semibold w-32">อีเมล</label>
+                  <label className="text-lg font-semibold w-32">อีเมล <span className="text-red-500">*</span></label>
                   <input
                     type="email"
                     value={email}
                     placeholder="เช่น example@email.com"
                     onChange={(e) => setEmail(e.target.value)}
                     className="border px-4 py-2 flex-1 shadow"
+                    required
                   />
                 </div>
 
                 {/* เบอร์ */}
                 <div className="flex items-center gap-4">
-                  <label className="text-lg font-semibold w-32">เบอร์ติดต่อ</label>
+                  <label className="text-lg font-semibold w-32">เบอร์ติดต่อ <span className="text-red-500">*</span></label>
                   <input
                     type="tel"
                     value={phone}
                     placeholder="เช่น 0901234567"
                     onChange={(e) => setPhone(e.target.value)}
                     className="border px-4 py-2 flex-1 shadow"
+                    required
                   />
                 </div>
 
                 {/* ที่อยู่ */}
                 <div className="flex items-center gap-4">
-                  <label className="text-lg font-semibold w-32">ที่อยู่</label>
+                  <label className="text-lg font-semibold w-32">ที่อยู่ <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     value={address}
                     placeholder="ที่อยู่"
                     onChange={(e) => setAddress(e.target.value)}
                     className="border px-4 py-2 flex-1 shadow"
+                    required
                   />
                 </div>
 
@@ -365,7 +407,7 @@ function A_AddStudent() {
                 <div className="flex items-center gap-4 col-span-2">
                   <div className="flex items-center gap-4 col-span-2">
                     <label className="text-lg font-semibold w-40">
-                      วัน/เดือน/ปี เกิด
+                      วัน/เดือน/ปี เกิด <span className="text-red-500">*</span>
                     </label>
 
                     <button
