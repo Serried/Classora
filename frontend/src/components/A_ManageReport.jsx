@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 
-const API = "http://localhost:3000";
 
 const STATUS_OPTIONS = [
   { value: "", label: "คำร้องทั้งหมด" },
@@ -31,7 +30,7 @@ function A_ManageReport() {
   const fetchServerTime = async () => {
     const clientNow = new Date();
     try {
-      const res = await fetch(`${API}/api/time`);
+      const res = await fetch('/api/time');
       const data = await res.json();
       if (data.serverTime) {
         setServerTime(new Date(data.serverTime));
@@ -43,7 +42,7 @@ function A_ManageReport() {
   const fetchTickets = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API}/api/admin/tickets`, {
+      const res = await fetch('/api/admin/tickets', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -82,7 +81,7 @@ function A_ManageReport() {
       const token = localStorage.getItem("token");
       const body = { status: newStatus };
       if (newStatus === "CLOSED" && comment) body.comment = comment;
-      const res = await fetch(`${API}/api/admin/tickets/${ticketId}`, {
+      const res = await fetch(`/api/admin/tickets/${ticketId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -237,7 +236,7 @@ function A_ManageReport() {
                     <div className="shrink-0 w-14 h-14 rounded-full bg-sky-200 flex items-center justify-center text-sky-600 font-bold text-lg overflow-hidden">
                       {r.avatar ? (
                         <img
-                          src={`${API}/uploads/${r.avatar}`}
+                          src={`/uploads/${r.avatar}`}
                           alt=""
                           className="w-full h-full object-cover"
                         />
@@ -401,13 +400,13 @@ function A_ManageReport() {
                 <div className="mb-4">
                   <p className="text-sm font-medium text-gray-600 mb-2">รูปแนบ</p>
                   <a
-                    href={`${API}/uploads/${selectedTicket.attachment}`}
+                    href={`/uploads/${selectedTicket.attachment}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block"
                   >
                     <img
-                      src={`${API}/uploads/${selectedTicket.attachment}`}
+                      src={`/uploads/${selectedTicket.attachment}`}
                       alt="รูปแนบ"
                       className="max-w-full max-h-64 object-contain rounded-lg border"
                     />
@@ -417,7 +416,7 @@ function A_ManageReport() {
               <div className="flex items-center gap-3 mb-4">
                 {selectedTicket.avatar ? (
                   <img
-                    src={`${API}/uploads/${selectedTicket.avatar}`}
+                    src={`/uploads/${selectedTicket.avatar}`}
                     alt=""
                     className="w-10 h-10 rounded-full object-cover"
                   />

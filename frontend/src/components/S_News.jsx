@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 import AnnouncementCard from "./AnnouncementCard";
 
-const API = "http://localhost:3000";
 
 function S_News() {
   const [announcements, setAnnouncements] = useState([]);
@@ -15,7 +14,7 @@ function S_News() {
   const fetchServerTime = async () => {
     const clientNow = new Date();
     try {
-      const res = await fetch(`${API}/api/time`);
+      const res = await fetch(`/api/time`);
       const data = await res.json();
       if (data.serverTime) {
         setServerTime(new Date(data.serverTime));
@@ -32,7 +31,7 @@ function S_News() {
     const fetchNews = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${API}/api/me/student/news`, {
+        const res = await fetch(`/api/me/student/news`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

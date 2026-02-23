@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 const GROUP_NAMES = 
 ["กลุ่มสาระการเรียนรู้ภาษาไทย", 
@@ -66,10 +66,10 @@ function ScheduleAssignment({ classrooms, fetchSubjects, toastMsg, toastSuccess,
     setLoading(true);
     try {
       const [subRes, schedRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_BASE || ""}/api/admin/classrooms/${classID}/subjects-for-schedule?year=${ay.year}&term=${ay.term}`, {
+        fetch(`/api/admin/classrooms/${classID}/subjects-for-schedule?year=${ay.year}&term=${ay.term}`, {
           headers: getAuthHeaders(),
         }),
-        fetch(`${import.meta.env.VITE_API_BASE || ""}/api/admin/classrooms/${classID}/schedule?year=${ay.year}&term=${ay.term}`, {
+        fetch(`/api/admin/classrooms/${classID}/schedule?year=${ay.year}&term=${ay.term}`, {
           headers: getAuthHeaders(),
         }),
       ]);
@@ -139,7 +139,7 @@ function ScheduleAssignment({ classrooms, fetchSubjects, toastMsg, toastSuccess,
       return;
     }
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE || ""}/api/admin/classrooms/${classID}/schedule`, {
+      const res = await fetch(`/api/admin/classrooms/${classID}/schedule`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ year: ay.year, term: ay.term, slots: scheduleSlots }),
@@ -338,7 +338,7 @@ function A_ManageSubject() {
 
   const fetchSubjects = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/admin/subjects/all`, {
+      const res = await fetch(`/api/admin/subjects/all`, {
         headers: getAuthHeaders(),
       });
       const data = await res.json();
@@ -350,7 +350,7 @@ function A_ManageSubject() {
 
   const fetchClassrooms = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/admin/classrooms`, { headers: getAuthHeaders() });
+      const res = await fetch(`/api/admin/classrooms`, { headers: getAuthHeaders() });
       const data = await res.json();
       if (data.success) setClassrooms(data.data || []);
     } catch (e) {
@@ -360,7 +360,7 @@ function A_ManageSubject() {
 
   const fetchTeachers = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/admin/get-teachers`, { headers: getAuthHeaders() });
+      const res = await fetch(`/api/admin/get-teachers`, { headers: getAuthHeaders() });
       const data = await res.json();
       if (data.success) setTeachers(data.data || []);
     } catch (e) {
@@ -408,7 +408,7 @@ function A_ManageSubject() {
       };
       delete payload.academicYear;
       delete payload.classID;
-      const res = await fetch(`${API_BASE}/api/admin/subjects/add-subject`, {
+      const res = await fetch(`/api/admin/subjects/add-subject`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -440,7 +440,7 @@ function A_ManageSubject() {
   };
 
   const handleClose = async (classID, subjectID) => {
-    const res = await fetch(`${API_BASE}/api/admin/subjects/close-subject`, {
+    const res = await fetch(`/api/admin/subjects/close-subject`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -460,7 +460,7 @@ function A_ManageSubject() {
     if (!deleteSubject) return;
     const { classID, subjectID } = deleteSubject;
     try {
-      const res = await fetch(`${API_BASE}/api/admin/subjects/classroom-subject`, {
+      const res = await fetch(`/api/admin/subjects/classroom-subject`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -492,7 +492,7 @@ function A_ManageSubject() {
   };
 
   const handleReopen = async (classID, subjectID) => {
-    const res = await fetch(`${API_BASE}/api/admin/subjects/reopen-subject`, {
+    const res = await fetch(`/api/admin/subjects/reopen-subject`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

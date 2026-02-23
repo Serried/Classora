@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 import AnnouncementCard from "./AnnouncementCard";
 
-const API = "http://localhost:3000";
 
 function A_ManageNews() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -27,7 +26,7 @@ function A_ManageNews() {
   const fetchServerTime = async () => {
     const clientNow = new Date();
     try {
-      const res = await fetch(`${API}/api/time`);
+      const res = await fetch(`/api/time`);
       const data = await res.json();
       if (data.serverTime) {
         setServerTime(new Date(data.serverTime));
@@ -51,7 +50,7 @@ function A_ManageNews() {
   const fetchAnnouncements = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API}/api/admin/announcements`, {
+      const res = await fetch(`/api/admin/announcements`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -89,7 +88,7 @@ function A_ManageNews() {
     if (!confirm("ยืนยันการลบประกาศนี้?")) return;
     const token = localStorage.getItem("token");
     const id = modalAnnouncement.announceID ?? modalAnnouncement.announcementID ?? modalAnnouncement.id;
-    const res = await fetch(`${API}/api/admin/announcement/${id}`, {
+    const res = await fetch(`/api/admin/announcement/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -110,7 +109,7 @@ function A_ManageNews() {
       return showToast("กรอกข้อมูลให้ครบ", "error");
     const token = localStorage.getItem("token");
     const id = modalAnnouncement.announceID ?? modalAnnouncement.announcementID ?? modalAnnouncement.id;
-    const res = await fetch(`${API}/api/admin/announcement/${id}`, {
+    const res = await fetch(`/api/admin/announcement/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -136,7 +135,7 @@ function A_ManageNews() {
 
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`${API}/api/admin/announcement/add`,{
+    const res = await fetch(`/api/admin/announcement/add`,{
 
       method:"POST",
 

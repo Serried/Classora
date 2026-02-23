@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import NavBar from "./NavBar";
 
-const API = "http://localhost:3000";
 
 const STATUS_LABEL = {
   OPEN: "ส่งแล้ว",
@@ -56,7 +55,7 @@ function BugReport() {
       formData.append("content", content.trim());
       if (attachmentFile) formData.append("attachment", attachmentFile);
 
-      const res = await fetch(`${API}/api/ticket`, {
+      const res = await fetch('/api/ticket', {
         method: "POST",
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
@@ -86,7 +85,7 @@ function BugReport() {
     setLoadingTickets(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API}/api/me/tickets`, {
+      const res = await fetch('/api/me/tickets', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -109,7 +108,7 @@ function BugReport() {
     setClosingId(ticketId);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API}/api/me/tickets/${ticketId}/close`, {
+      const res = await fetch(`/api/me/tickets/${ticketId}/close`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       });

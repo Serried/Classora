@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 
-const API = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+const API = import.meta.env.VITE_API_BASE || '';
 
 // Score ranges → grade (0-4), min score inclusive
 const SCORE_TO_GRADE = [
@@ -75,7 +75,7 @@ function S_ViewScore() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
-    fetch(`${API}/api/me/student/subjects`, {
+    fetch(`/api/me/student/subjects`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
@@ -95,8 +95,8 @@ function S_ViewScore() {
     const token = localStorage.getItem("token");
     const headers = { Authorization: `Bearer ${token}` };
     Promise.all([
-      fetch(`${API}/api/me/student/scores?subjectID=${selectedSubject}`, { headers }).then((r) => r.json()),
-      fetch(`${API}/api/me/student/score-stats?subjectID=${selectedSubject}`, { headers }).then((r) => r.json()),
+      fetch(`/api/me/student/scores?subjectID=${selectedSubject}`, { headers }).then((r) => r.json()),
+      fetch(`/api/me/student/score-stats?subjectID=${selectedSubject}`, { headers }).then((r) => r.json()),
     ]).then(([scoresRes, statsRes]) => {
       if (scoresRes.success) setScoreData(scoresRes.data);
       else setScoreData(null);

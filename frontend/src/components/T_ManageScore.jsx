@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 
-const API = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+const API = import.meta.env.VITE_API_BASE || '';
 
 function T_ManageScore() {
   const [subjects, setSubjects] = useState([]);

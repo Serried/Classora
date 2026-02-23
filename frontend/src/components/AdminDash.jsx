@@ -1,132 +1,39 @@
-import React, { useEffect, useState } from "react";
-import NavBar from "./NavBar";
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import DashboardLayout from './DashboardLayout';
 
-function AdminDash() {
+const ITEMS = [
+  { to: '/me/manage-subject', title: 'เพิ่ม-ลด รายวิชา', description: 'จัดการการเปิด-ปิดรายวิชาในแต่ละภาคเรียน', img: '/cards/admin/ManageSubject.png' },
+  { to: '/me/manage-news', title: 'ข่าวสาร / ประชาสัมพันธ์', description: 'เผยแพร่ประกาศ ข่าวสาร และข้อมูลสำคัญ', img: '/cards/admin/ManageNews.png' },
+  { to: '/me/add-student', title: 'จัดการข้อมูลนักเรียน', description: 'เพิ่ม แก้ไข หรือลบข้อมูลนักเรียน', img: '/cards/admin/AddStudent.png' },
+  { to: '/me/add-teacher', title: 'จัดการข้อมูลครูผู้สอน', description: 'จัดการข้อมูลครูผู้สอน รายวิชาที่รับผิดชอบ', img: '/cards/admin/AddTeacher.png' },
+  { to: '/me/manage-reports', title: 'ตรวจสอบคำร้อง', description: 'พิจารณาและดำเนินการคำร้องต่าง ๆ', img: '/cards/admin/ManageReports.png' },
+  { to: '/me/manage-classroom', title: 'จัดการห้องเรียน', description: 'จัดการสร้าง-ลบห้องเรียนในระบบโรงเรียน', img: '/cards/admin/ManageClass.png' },
+];
 
-  const API_BASE = "http://localhost:3000";
+const auth = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
+const name = (u) => [u?.thai_first_name, u?.thai_last_name].filter(Boolean).join(' ') || [u?.first_name, u?.last_name].filter(Boolean).join(' ') || u?.username;
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const [clientTime, setClientTime] = useState(() => new Date());
-  const [serverTime, setServerTime] = useState(null);
-  const [clientTimeAtFetch, setClientTimeAtFetch] = useState(null);
+export default function AdminDash() {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
   const [admin, setAdmin] = useState(null);
-  const [loadError, setLoadError] = useState(null);
-
-  const avatarUrl = admin?.avatar
-    ? `http://localhost:3000/uploads/${admin.avatar}`
-    : "https://placehold.co/80";
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/me/admin`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.success) setAdmin(res.data);
-        else setLoadError(res.message || "โหลดไม่สำเร็จ");
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoadError("เกิดข้อผิดพลาดในการเชื่อมต่อ");
-      });
+    fetch('/api/me/admin', { headers: auth() })
+      .then((r) => r.json())
+      .then((r) => r.success ? setAdmin(r.data) : setError(r.message || 'โหลดไม่สำเร็จ'))
+      .catch((e) => { console.error(e); setError('เกิดข้อผิดพลาด'); });
   }, []);
 
-  useEffect(() => {
-    const tick = setInterval(() => setClientTime(new Date()), 1000);
-    return () => clearInterval(tick);
-  }, []);
+  const avatarUrl = admin?.avatar ? `/uploads/${admin.avatar}` : 'https://placehold.co/80';
 
-  useEffect(() => {
-    const fetchServerTime = () => {
-      const clientNow = new Date();
-      fetch(`${API_BASE}/api/time`)
-        .then((res) => res.json())
-        .then(({ serverTime: serverTimeIso }) => {
-          if (serverTimeIso) {
-            setServerTime(new Date(serverTimeIso));
-            setClientTimeAtFetch(clientNow);
-          }
-        })
-        .catch(() => {});
-    };
-    fetchServerTime();
-    const interval = setInterval(fetchServerTime, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const formatTime = (d) => (d ? d.toLocaleString("th-TH", { dateStyle: "short", timeStyle: "medium" }) : "—");
-
-  const runningServerTime = serverTime && clientTimeAtFetch ? new Date(serverTime.getTime() + (clientTime.getTime() - clientTimeAtFetch.getTime())) : serverTime;
-  if (!admin) {
-    return (
-      <>
-        <NavBar />
-        {loadError ? <p className="p-4 text-red-600">{loadError}</p> : <p className="p-4">กำลังโหลด...</p>}
-      </>
-    );
-  }
-  const items = [
-    { to: "/me/manage-subject", title: "เพิ่ม-ลด รายวิชา", description: "จัดการการเปิด-ปิดรายวิชาในแต่ละภาคเรียน พร้อมกำหนดรายละเอียดที่เกี่ยวข้องกับการลงทะเบียน", img: "/cards/admin/ManageSubject.png"},
-    { to: "/me/manage-news", title: "ข่าวสาร / ประชาสัมพันธ์", description: "เผยแพร่ประกาศ ข่าวสาร และข้อมูลสำคัญให้กับนักเรียนและครูผู้สอนภายในระบบ", img: "/cards/admin/ManageNews.png" },
-    { to: "/me/add-student", title: "จัดการข้อมูลนักเรียน", description: "เพิ่ม แก้ไข หรือลบข้อมูลนักเรียน รวมถึงตรวจสอบสถานะการลงทะเบียนและประวัติการศึกษา", img: "/cards/admin/AddStudent.png"},
-    { to: "/me/add-teacher", title: "จัดการข้อมูลครูผู้สอน", description: "จัดการข้อมูลครูผู้สอน รายวิชาที่รับผิดชอบ", img: "/cards/admin/AddTeacher.png" },
-    { to: "/me/manage-reports", title: "ตรวจสอบคำร้อง", description: "พิจารณาและดำเนินการคำร้องต่าง ๆ ที่ถูกส่งเข้ามาจากผู้ใช้งานในระบบ", img: "/cards/admin/ManageReports.png" },
-    { to: "/me/manage-classroom", title: "จัดการห้องเรียน", description: "จัดการสร้าง-ลบห้องเรียนในระบบโรงเรียน", img: "/cards/admin/ManageClass.png" },
-  ];
-  
-
-  return (
+  const profile = (
     <>
-      <NavBar />
-      <div id="container" className="flex min-h-screen w-full gap-6 bg-gray-100">
-        <div id="left" className="w-1/5 bg-white border border-[#ddd] rounded-xl p-5">
-          <p>
-            เวลาของคุณ: <strong>{formatTime(clientTime)}</strong>
-          </p>
-          <p>
-            เวลาของเซิร์ฟเวอร์: <strong>{formatTime(serverTime)}</strong>
-          </p>
-        </div>
-        <div id="middle" className="w-3/5 min-w-0 grid grid-cols-2 p-6 gap-6 content-start">
-  {items.map((item, i) => (
-    <Link
-      key={i}
-      to={item.to}
-      className={`
-        block w-full h-full
-        ${items.length % 2 !== 0 && i === items.length - 1 ? "col-span-2" : ""}
-      `}
-    >
-      <div className="w-full h-full overflow-hidden border border-[#ddd] shadow-xl/30 rounded-xl bg-white">
-        <img
-          src={item.img}
-          alt=""
-          className="w-full h-48 object-cover object-center"
-        />
-        <div className="p-4">
-          <h5 className="text-lg font-bold">{item.title}</h5>
-          <p className="text-md mb-10">{item.description}</p>
-        </div>
-      </div>
-    </Link>
-  ))}
-</div>
-
-        <div id="right" className="w-1/5 bg-white border border-[#ddd] rounded-xl flex flex-col items-center justify-start">
-          <div className="mt-42">
-            <img src={avatarUrl} alt="" className="rounded-full w-3xs" />
-          </div>
-          <p className="text-2xl font-bold mt-5">{user.gender === 'M' ? "นาย" : "นางสาว"}{user.thai_first_name} {user.thai_last_name}</p>
-          <p className="text-gray-600">ผู้ดูแลระบบ</p>
-        </div>
-      </div>
+      <div className="mt-42"><img src={avatarUrl} alt="" className="rounded-full w-3xs" /></div>
+      <p className="text-2xl font-bold mt-5">{user.gender === 'M' ? 'นาย' : 'นางสาว'} {name(user)}</p>
+      <p className="text-gray-600">ผู้ดูแลระบบ</p>
     </>
   );
 
-  
+  return <DashboardLayout items={ITEMS} profile={profile} loading={!admin} error={error} />;
 }
-
-export default AdminDash;

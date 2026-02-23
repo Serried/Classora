@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 import AnnouncementCard from "./AnnouncementCard";
 
-const API = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+const API = import.meta.env.VITE_API_BASE || '';
 
 function T_News() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -25,7 +25,7 @@ function T_News() {
   const fetchServerTime = async () => {
     const clientNow = new Date();
     try {
-      const res = await fetch(`${API}/api/time`);
+      const res = await fetch(`/api/time`);
       const data = await res.json();
       if (data.serverTime) {
         setServerTime(new Date(data.serverTime));
@@ -52,7 +52,7 @@ function T_News() {
   const fetchAnnouncements = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API}/api/me/teacher/news`, {
+      const res = await fetch(`/api/me/teacher/news`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -93,7 +93,7 @@ function T_News() {
       modalAnnouncement.announceID ??
       modalAnnouncement.announcementID ??
       modalAnnouncement.id;
-    const res = await fetch(`${API}/api/me/teacher/announcement/${id}`, {
+    const res = await fetch(`/api/me/teacher/announcement/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -118,7 +118,7 @@ function T_News() {
       modalAnnouncement.announceID ??
       modalAnnouncement.announcementID ??
       modalAnnouncement.id;
-    const res = await fetch(`${API}/api/me/teacher/announcement/${id}`, {
+    const res = await fetch(`/api/me/teacher/announcement/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -139,7 +139,7 @@ function T_News() {
   const handleSubmit = async () => {
     if (!title || !content) return showToast("กรอกข้อมูลให้ครบ", "error");
     const token = localStorage.getItem("token");
-    const res = await fetch(`${API}/api/me/teacher/announcement`, {
+    const res = await fetch(`/api/me/teacher/announcement`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -1,46 +1,26 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 
-require('dotenv').config();
-
 const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-fs.mkdirSync(path.join(uploadsDir, 'avatars'), { recursive: true });
-fs.mkdirSync(path.join(uploadsDir, 'csv'), { recursive: true });
-fs.mkdirSync(path.join(uploadsDir, 'tickets'), { recursive: true });
+['', 'avatars', 'csv', 'tickets'].forEach((d) => fs.mkdirSync(path.join(uploadsDir, d), { recursive: true }));
 
 const app = express();
-
-// debug
-const c = { dim: '\x1b[90m', cyan: '\x1b[36m', yellow: '\x1b[33m', green: '\x1b[32m', magenta: '\x1b[35m', red: '\x1b[31m', reset: '\x1b[0m' };
-const methodColor = (m) => ({ GET: c.cyan, POST: c.green, PUT: c.magenta, DELETE: c.red }[m] || c.yellow);
+const c = { d: '\x1b[90m', g: '\x1b[32m', y: '\x1b[33m', r: '\x1b[0m' };
 app.use((req, res, next) => {
-  const ip = req.ip || req.socket?.remoteAddress || req.connection?.remoteAddress || '?';
-  const ts = new Date().toISOString();
-  const mc = methodColor(req.method);
-  console.log(`${c.dim}[${ts}]${c.reset} ${c.cyan}${ip}${c.reset} ${mc}${req.method}${c.reset} ${c.yellow}${req.originalUrl}${c.reset}`);
+  console.log(`${c.d}[${new Date().toISOString()}]${c.r} ${req.ip || '?'} ${c.g}${req.method}${c.r} ${c.y}${req.originalUrl}${c.r}`);
   next();
 });
 
-app.use(cors());
-app.use(express.json());
+app.use(cors(), express.json());
 app.use('/uploads', express.static(uploadsDir));
 
-const authRoutes = require('./routes/auth');
-const meRoutes = require('./routes/me');
-const adminRoutes = require('./routes/admin');
-const usersRoutes = require('./routes/users');
-const miscRoutes = require('./routes/misc');
+app.use('/api', require('./routes/misc'));
+app.use('/api', require('./routes/auth'));
+app.use('/api/me', require('./routes/me'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/users', require('./routes/users'));
 
-app.use('/api', miscRoutes);
-app.use('/api', authRoutes);
-app.use('/api/me', meRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/users', usersRoutes);
-
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.listen(3000, () => console.log('Server running on port 3000'));

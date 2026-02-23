@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import NavBar from "./NavBar";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 function getAuthHeaders() {
   const token = localStorage.getItem("token");
@@ -32,7 +32,7 @@ function A_ManageClassroom() {
 
   const fetchTeachers = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/admin/get-teachers`, { headers: getAuthHeaders() });
+      const res = await fetch(`/api/admin/get-teachers`, { headers: getAuthHeaders() });
       const data = await res.json();
       if (data.success) setTeachers(data.data || []);
     } catch (e) {
@@ -51,7 +51,7 @@ function A_ManageClassroom() {
 
   const fetchClassrooms = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/admin/classrooms`, { headers: getAuthHeaders() });
+      const res = await fetch(`/api/admin/classrooms`, { headers: getAuthHeaders() });
 
       const data = await res.json();
 
@@ -65,7 +65,7 @@ function A_ManageClassroom() {
 
   const fetchClassStudents = async (classID) => {
     try {
-      const res = await fetch(`${API_BASE}/api/admin/classrooms/${classID}/students`, { headers: getAuthHeaders() });
+      const res = await fetch(`/api/admin/classrooms/${classID}/students`, { headers: getAuthHeaders() });
 
       const data = await res.json();
 
@@ -85,7 +85,7 @@ function A_ManageClassroom() {
 
     try {
       if (editingID) {
-        await fetch(`${API_BASE}/api/admin/classrooms/${editingID}`, {
+        await fetch(`/api/admin/classrooms/${editingID}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -94,7 +94,7 @@ function A_ManageClassroom() {
           body: JSON.stringify(form),
         });
       } else {
-        await fetch(`${API_BASE}/api/admin/classroom/create`, {
+        await fetch(`/api/admin/classroom/create`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -135,7 +135,7 @@ function A_ManageClassroom() {
     const id = deleteConfirm;
     setDeleteConfirm(null);
     try {
-      await fetch(`${API_BASE}/api/admin/classrooms/${id}`, {
+      await fetch(`/api/admin/classrooms/${id}`, {
         method: "DELETE",
         headers: getAuthHeaders(),
       });
@@ -191,7 +191,7 @@ function A_ManageClassroom() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/admin/classrooms/${editingID}/add-student`, {
+      const res = await fetch(`/api/admin/classrooms/${editingID}/add-student`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ usernames }),
@@ -218,7 +218,7 @@ function A_ManageClassroom() {
     const cid = Number(editingID);
     if (!Number.isInteger(sid) || !Number.isInteger(cid)) return;
     try {
-      const res = await fetch(`${API_BASE}/api/admin/classrooms/remove-student`, {
+      const res = await fetch(`/api/admin/classrooms/remove-student`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

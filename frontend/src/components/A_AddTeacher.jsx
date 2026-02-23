@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import NavBar from './NavBar'
 import DatePicker from './DatePicker';
 
-const API_BASE = 'http://localhost:3000';
 
 function A_AddTeacher() {
 
@@ -50,7 +49,7 @@ function A_AddTeacher() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/admin/teachers/csv`, {
+      const res = await fetch(`/api/admin/teachers/csv`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`
@@ -94,7 +93,7 @@ function A_AddTeacher() {
     setErrorMessage({ text: '', isError: false });
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/admin/teachers/${selectedTeacher.teacherID}`, {
+      const res = await fetch(`/api/admin/teachers/${selectedTeacher.teacherID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +129,7 @@ function A_AddTeacher() {
   const fetchTeachers = () => {
     const token = localStorage.getItem('token');
     if (!token) return;
-    fetch(`${API_BASE}/api/admin/get-teachers`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`/api/admin/get-teachers`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => res.json())
       .then(result => { if (result.success && Array.isArray(result.data)) setTeachers(result.data); })
       .catch(() => {});
@@ -138,7 +137,7 @@ function A_AddTeacher() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch(`${API_BASE}/api/subjects/group-names`, {
+    fetch(`/api/subjects/group-names`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
       .then(res => res.json())
@@ -187,7 +186,7 @@ function A_AddTeacher() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/admin/teachers`, {
+      const res = await fetch(`/api/admin/teachers`, {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData

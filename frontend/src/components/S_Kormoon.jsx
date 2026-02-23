@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 
-const API = "http://localhost:3000";
 
 function S_Kormoon() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -18,10 +17,10 @@ function S_Kormoon() {
       return;
     }
     Promise.all([
-      fetch(`${API}/api/me/student`, {
+      fetch(`/api/me/student`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then((r) => r.json()),
-      fetch(`${API}/api/me/student/classes`, {
+      fetch(`/api/me/student/classes`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then((r) => r.json()),
     ])
@@ -61,7 +60,7 @@ function S_Kormoon() {
     try {
       const formData = new FormData();
       formData.append("avatar", file);
-      const res = await fetch(`${API}/api/users/me/avatar`, {
+      const res = await fetch(`/api/users/me/avatar`, {
         method: "POST",
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         body: formData,
@@ -109,7 +108,7 @@ function S_Kormoon() {
   }
 
   const avatarUrl = student.avatar
-    ? `${API}/uploads/${student.avatar}`
+    ? `/uploads/${student.avatar}`
     : "https://placehold.co/120";
 
   const fields = [

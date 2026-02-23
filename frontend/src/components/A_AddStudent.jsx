@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import NavBar from './NavBar';
 import DatePicker from './DatePicker';
 
-const API_BASE = 'http://localhost:3000';
 
 function A_AddStudent() {
   const [firstName, setFirstName] = useState('');
@@ -48,7 +47,7 @@ function A_AddStudent() {
     try {
       setErrorMessage({ text: '', isError: false });
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/admin/students/csv`, {
+      const res = await fetch(`/api/admin/students/csv`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -87,7 +86,7 @@ function A_AddStudent() {
   const fetchStudents = () => {
     const token = localStorage.getItem('token');
     if (!token) return;
-    fetch(`${API_BASE}/api/admin/students`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`/api/admin/students`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
       .then((result) => {
         if (result.success && Array.isArray(result.data)) setStudents(result.data);
@@ -113,7 +112,7 @@ function A_AddStudent() {
     setErrorMessage({ text: '', isError: false });
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/admin/students/${selectedStudent.studentID}`, {
+      const res = await fetch(`/api/admin/students/${selectedStudent.studentID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -176,7 +175,7 @@ function A_AddStudent() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/admin/students`, {
+      const res = await fetch(`/api/admin/students`, {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,

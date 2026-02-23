@@ -1,4 +1,3 @@
-const API = "http://localhost:3000";
 
 const categoryColor = (cat) => {
   switch (cat) {
@@ -68,7 +67,7 @@ function AnnouncementCard({
   serverNow = null,
 }) {
   const avatarUrl = avatar
-    ? `${API}/uploads/${avatar}`
+    ? `/uploads/${avatar}`
     : "https://placehold.co/48";
 
   return (

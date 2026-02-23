@@ -2,59 +2,29 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 
-const uploadsDir = path.join(__dirname, '..', 'uploads', 'avatars');
-const csvUploadDir = path.join(__dirname, '..', 'uploads', 'csv');
-const ticketDir = path.join(__dirname, '..', 'uploads', 'tickets');
+const mk = (d) => { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); };
+const dirs = { avatars: path.join(__dirname, '..', 'uploads', 'avatars'), csv: path.join(__dirname, '..', 'uploads', 'csv'), tickets: path.join(__dirname, '..', 'uploads', 'tickets') };
+Object.values(dirs).forEach(mk);
 
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-if (!fs.existsSync(csvUploadDir)) fs.mkdirSync(csvUploadDir, { recursive: true });
-if (!fs.existsSync(ticketDir)) fs.mkdirSync(ticketDir, { recursive: true });
-
-const avatarStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const ext = (file.mimetype.match(/\/(jpeg|jpg|png|gif|webp)$/) || ['', 'jpg'])[1];
-    cb(null, `user-${Date.now()}.${ext}`);
-  }
-});
+const imgFilter = (_, file, cb) => (/image\/(jpeg|jpg|png|gif|webp)/.test(file.mimetype) ? cb(null, true) : cb(new Error('Only images allowed')));
+const ext = (m) => (m.match(/\/(jpeg|jpg|png|gif|webp)$/) || ['', 'jpg'])[1];
 
 const upload = multer({
-  storage: avatarStorage,
+  storage: multer.diskStorage({ destination: (_, __, cb) => cb(null, dirs.avatars), filename: (_, f, cb) => cb(null, `user-${Date.now()}.${ext(f.mimetype)}`) }),
   limits: { fileSize: 2 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (/image\/(jpeg|jpg|png|gif|webp)/.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Only images (jpeg, png, gif, webp) allowed'));
-  }
+  fileFilter: imgFilter,
 });
 
 const uploadCsv = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, csvUploadDir),
-    filename: (req, file, cb) => cb(null, `csv-${Date.now()}.csv`)
-  }),
+  storage: multer.diskStorage({ destination: (_, __, cb) => cb(null, dirs.csv), filename: (_, __, cb) => cb(null, `csv-${Date.now()}.csv`) }),
   limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const ok = /^text\/(csv|plain)$|application\/csv/.test(file.mimetype) || /\.csv$/i.test(file.originalname);
-    if (ok) cb(null, true);
-    else cb(new Error('Only CSV files allowed'));
-  }
-});
-
-const ticketStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, ticketDir),
-  filename: (req, file, cb) => {
-    const ext = (file.mimetype.match(/\/(jpeg|jpg|png|gif|webp)$/) || ['', 'jpg'])[1];
-    cb(null, `ticket-${Date.now()}.${ext}`);
-  }
+  fileFilter: (_, f, cb) => (/^text\/(csv|plain)$|application\/csv/.test(f.mimetype) || /\.csv$/i.test(f.originalname)) ? cb(null, true) : cb(new Error('Only CSV allowed')),
 });
 
 const uploadTicketAttachment = multer({
-  storage: ticketStorage,
+  storage: multer.diskStorage({ destination: (_, __, cb) => cb(null, dirs.tickets), filename: (_, f, cb) => cb(null, `ticket-${Date.now()}.${ext(f.mimetype)}`) }),
   limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (/image\/(jpeg|jpg|png|gif|webp)/.test(file.mimetype)) cb(null, true);
-    else cb(new Error('Only images (jpeg, png, gif, webp) allowed'));
-  }
+  fileFilter: imgFilter,
 });
 
 module.exports = { upload, uploadCsv, uploadTicketAttachment };

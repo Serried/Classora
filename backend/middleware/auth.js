@@ -1,64 +1,33 @@
 const jwt = require('jsonwebtoken');
+const secret = process.env.JWT_SECRET;
+
+const getToken = (req) => req.headers.authorization?.startsWith('Bearer ') && req.headers.authorization.split(' ')[1];
 
 function requireAuth(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: 'ไม่ได้รับอนุญาต' });
-  }
+  const token = getToken(req);
+  if (!token) return res.status(401).json({ success: false, message: 'ไม่ได้รับอนุญาต' });
   try {
-    const token = authHeader.split(' ')[1];
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = jwt.verify(token, secret);
     next();
-  } catch (e) {
-    return res.status(401).json({ success: false, message: 'โทเคนไม่ถูกต้อง' });
+  } catch {
+    res.status(401).json({ success: false, message: 'โทเคนไม่ถูกต้อง' });
   }
 }
 
-function requireStudent(req, res, next) {
-  if (req.user.role !== 'STUDENT') {
-    return res.status(403).json({ success: false, message: 'สำหรับนักเรียนเท่านั้น' });
-  }
-  next();
-}
-
-function requireTeacher(req, res, next) {
-  if (req.user.role !== 'TEACHER') {
-    return res.status(403).json({ success: false, message: 'สำหรับนักครูผู้สอนเท่านั้น' });
-  }
-  next();
-}
-
-function requireAdmin(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ success: false, message: 'ไมไ่ด้รับอนุญาต' });
-  }
-  try {
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== 'ADMIN') {
-      return res.status(403).json({ success: false, message: 'สำหรับผู้แดแลระบบเท่านั้น' });
-    }
-    req.user = decoded;
-    next();
-  } catch (e) {
-    return res.status(401).json({ success: false, message: 'โทเคนไม่ถูกต้อง' });
-  }
-}
+const requireRole = (role, msg) => (req, res, next) =>
+  req.user.role === role ? next() : res.status(403).json({ success: false, message: msg });
 
 function optionalAuth(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
-    req.user = null;
-    return next();
-  }
-  try {
-    const token = authHeader.split(' ')[1];
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
-  } catch (e) {
-    req.user = null;
-  }
+  const token = getToken(req);
+  if (!token) { req.user = null; return next(); }
+  try { req.user = jwt.verify(token, secret); } catch { req.user = null; }
   next();
 }
 
-module.exports = { requireAuth, requireStudent, requireTeacher, requireAdmin, optionalAuth };
+module.exports = {
+  requireAuth,
+  requireStudent: requireRole('STUDENT', 'สำหรับนักเรียนเท่านั้น'),
+  requireTeacher: requireRole('TEACHER', 'สำหรับครูผู้สอนเท่านั้น'),
+  requireAdmin: requireRole('ADMIN', 'สำหรับผู้ดูแลระบบเท่านั้น'),
+  optionalAuth,
+};

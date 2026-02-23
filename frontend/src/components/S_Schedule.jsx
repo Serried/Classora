@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 
-const API = import.meta.env.VITE_API_BASE || "http://localhost:3000";
 
 const DAYS = [
   { dow: 1, label: "จันทร์" },
@@ -32,7 +31,7 @@ function S_Schedule() {
       setLoading(false);
       return;
     }
-    fetch(`${API}/api/me/student/schedule`, {
+    fetch(`/api/me/student/schedule`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
