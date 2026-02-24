@@ -305,7 +305,13 @@ router.post('/subjects/close-subject', handle(async (req, res) => {
 router.delete('/subjects/classroom-subject', handle(async (req, res) => {
   const { classID, subjectID } = req.body || {};
   if (!classID || !subjectID) return bad(res, 'classID และ subjectID จำเป็น');
-  await pool.query('DELETE FROM ClassroomSubject WHERE classID = ? AND subjectID = ?', [classID, subjectID]);
+  const cid = parseInt(classID, 10);
+  const sid = parseInt(subjectID, 10);
+  if (isNaN(cid) || isNaN(sid)) return bad(res, 'classID และ subjectID จำเป็น');
+  await pool.query('DELETE FROM ClassSchedule WHERE classID = ? AND subjectID = ?', [cid, sid]);
+  dbRaw.prepare('DELETE FROM Score WHERE classID = ? AND subjectID = ?').run(cid, sid);
+  dbRaw.prepare('DELETE FROM ScoreComponent WHERE classID = ? AND subjectID = ?').run(cid, sid);
+  await pool.query('DELETE FROM ClassroomSubject WHERE classID = ? AND subjectID = ?', [cid, sid]);
   ok(res, null, 'ลบรายวิชาสำเร็จ');
 }));
 
