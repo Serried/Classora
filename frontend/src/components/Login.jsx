@@ -15,6 +15,22 @@ function Login() {
   const [bg1, setBg1] = useState(RandomBackgroundImg(1,18));
 const [bg2, setBg2] = useState(RandomBackgroundImg(1,18));
 const [showSecond, setShowSecond] = useState(false);
+const [featured, setFeatured] = useState([]);
+const [selected, setSelected] = useState(null);
+
+useEffect(() => {
+  const getFeatured = async () => {
+    try {
+    const response = await fetch("/api/news/featured")
+    const data = await response.json();
+    console.log(data)
+    setFeatured(data.data);
+    } catch (e) {
+      setError(e.message)
+    }
+  };
+  getFeatured();
+}, []);
 
 useEffect(() => {
   const interval = setInterval(() => {
@@ -164,12 +180,45 @@ useEffect(() => {
               ข่าวสาร/ประชาสัมพันธ์
             </p>
             {/* hard coded เด้อ */}
-            <p className="text-center mt-5 text-white">
-              ขณะนี้ยังไม่มีประกาศ/ประชาสัมพันธ์ใด ๆ
-            </p>
+            {featured.length > 0 ? featured.map((i) => (
+  <button
+    key={i.announceID}
+    onClick={() => {
+      setSelected(i);
+      document.getElementById('announce-detail').showModal();
+    }}
+    className="flex flex-col w-full text-left bg-[#ddd]/25 my-5 px-5 py-2 cursor-pointer rounded-lg"
+  >
+    <h3 className="text-white">{i.title}</h3>
+    <p className="text-white">{i.content}</p>
+  </button>
+)) : (
+  <p className="text-center mt-5 text-white">
+    ขณะนี้ยังไม่มีประกาศ/ประชาสัมพันธ์ใด ๆ
+  </p>
+)}
+          
+            
           </div>
         </div>
       </div>
+      <dialog id="announce-detail" className="modal">
+  <div className="modal-box bg-[#ddd]/25">
+    <h3 className="font-bold text-lg text-white">
+      {selected?.title}
+    </h3>
+    <p className="py-4 text-white">
+      {selected?.content}
+    </p>
+    <div className="modal-action">
+      <form method="dialog">
+        <button className="border-none btn bg-[#FF842C] text-white">
+          ปิด
+        </button>
+      </form>
+    </div>
+  </div>
+</dialog>
     </>
   );
 }
