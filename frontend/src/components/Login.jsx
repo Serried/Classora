@@ -6,7 +6,12 @@ function RandomBackgroundImg(min, max) {
   const maxFloored = Math.floor(max);
   return Math.floor(Math.random() * (maxFloored - minCeiled + 1)) + minCeiled; 
 }
-
+const truncate = (text, max = 30) => {
+  if (!text) return "";
+  return text.length > max
+    ? text.substring(0, max) + "..."
+    : text;
+};
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -179,7 +184,6 @@ useEffect(() => {
             <p className="text-3xl text-white text-center font-bold px-10">
               ข่าวสาร/ประชาสัมพันธ์
             </p>
-            {/* hard coded เด้อ */}
             {featured.length > 0 ? featured.map((i) => (
   <button
     key={i.announceID}
@@ -190,7 +194,7 @@ useEffect(() => {
     className="flex flex-col w-full text-left bg-[#ddd]/25 my-5 px-5 py-2 cursor-pointer rounded-lg"
   >
     <h3 className="text-white">{i.title}</h3>
-    <p className="text-white">{i.content}</p>
+    <p className="text-white">{truncate(i.content)}</p>
   </button>
 )) : (
   <p className="text-center mt-5 text-white">
@@ -207,7 +211,7 @@ useEffect(() => {
     <h3 className="font-bold text-lg text-white">
       {selected?.title}
     </h3>
-    <p className="py-4 text-white">
+    <p className="py-4 text-white break-words">
       {selected?.content}
     </p>
     <div className="modal-action">

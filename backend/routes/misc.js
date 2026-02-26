@@ -31,6 +31,7 @@ router.get('/news/featured', handle(async (_, res) => {
     SELECT DISTINCT * 
     FROM Announcement 
     WHERE targetRole = 'ALL'
+    ORDER BY isPinned DESC
     LIMIT 3;
     `)
     ok(res, row);
