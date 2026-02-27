@@ -1,5 +1,12 @@
 #!/bin/bash
 
+echo "Setting up Backend .env..."
+if [ ! -f backend/.env ]; then
+  cat <<EOL > backend/.env
+JWT_SECRET=weogeawi
+EOL
+fi
+
 echo "Installing Backend..."
 cd backend
 npm install
