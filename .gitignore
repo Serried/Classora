@@ -24,6 +24,8 @@ dist-ssr
 *.sw?
 
 .env
+backend/lreso.db
+backend/uploads
 
 # SQLite database (local)
 # backend/lreso.db

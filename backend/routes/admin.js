@@ -7,7 +7,7 @@ const pool = require('../lib/db');
 const dbRaw = require('../lib/db').raw;
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { generatePassword } = require('../utils/password');
-const { createStudentUsername } = require('../utils/username');
+const { createStudentUsername, createTeacherUsername } = require('../utils/username');
 const { upload, uploadCsv } = require('../utils/upload');
 const { handle, yt, bad, notFound, ok } = require('../lib/handler');
 
@@ -53,17 +53,24 @@ router.post('/teachers', upload.single('avatar'), handle(async (req, res) => {
   if (!first_name || !last_name || !email) return bad(res, 'English first name, last name, and email required');
   if (!req.file) return bad(res, 'กรุณาอัพโหลดรูปโปรไฟล์');
   if (isFutureDob(dob)) return bad(res, 'วันเดือนปีเกิดไม่สามารถเป็นวันในอนาคตได้');
+  const uname = await createTeacherUsername(pool, first_name, last_name);
   const pw = generatePassword(), hash = await bcrypt.hash(pw, 10);
-  const [{ insertId: tid }] = await pool.query(
-    'INSERT INTO Teacher (first_name, last_name, thai_first_name, thai_last_name, gender, dob, tel, email, department, status) VALUES (?,?,?,?,?,?,?,?,?,?)',
-    [first_name, last_name, n(thai_first_name), n(thai_last_name), n(gender), n(dob), n(tel), email, n(department), 'ACTIVE']
-  );
-  const uname = tn(first_name, last_name);
-  await pool.query(
-    "INSERT INTO User (username, password_hash, role, refID, status, avatar, thai_first_name, thai_last_name, gender, createdAt) VALUES (?,?,'TEACHER',?,'ACTIVE',?,?,?,?,datetime('now'))",
-    [uname, hash, tid, `avatars/${req.file.filename}`, n(thai_first_name), n(thai_last_name), n(gender)]
-  );
-  res.json({ success: true, message: `สร้างบัญชี (ครูผู้สอน) - ${uname}:${pw} สำเร็จ!`, password: pw });
+  dbRaw.exec('BEGIN TRANSACTION');
+  try {
+    const [{ insertId: tid }] = await pool.query(
+      'INSERT INTO Teacher (first_name, last_name, thai_first_name, thai_last_name, gender, dob, tel, email, department, status) VALUES (?,?,?,?,?,?,?,?,?,?)',
+      [first_name, last_name, n(thai_first_name), n(thai_last_name), n(gender), n(dob), n(tel), email, n(department), 'ACTIVE']
+    );
+    await pool.query(
+      "INSERT INTO User (username, password_hash, role, refID, status, avatar, thai_first_name, thai_last_name, gender, createdAt) VALUES (?,?,'TEACHER',?,'ACTIVE',?,?,?,?,datetime('now'))",
+      [uname, hash, tid, `avatars/${req.file.filename}`, n(thai_first_name), n(thai_last_name), n(gender)]
+    );
+    dbRaw.exec('COMMIT');
+    res.json({ success: true, message: `สร้างบัญชี (ครูผู้สอน) - ${uname}:${pw} สำเร็จ!`, password: pw });
+  } catch (e) {
+    dbRaw.exec('ROLLBACK');
+    throw e;
+  }
 }));
 
 router.post('/teachers/csv', uploadCsv.single('csv'), handle(async (req, res) => {
@@ -74,17 +81,24 @@ router.post('/teachers/csv', uploadCsv.single('csv'), handle(async (req, res) =>
     const { first_name, last_name, thai_first_name, thai_last_name, gender, dob, tel, email, department } = r;
     if (!first_name || !last_name || !email) continue;
     if (isFutureDob(dob)) continue; // ถ้าใน CSV วันเกิด > เวลาปัจจุบันจะข้ามไป
+    const uname = await createTeacherUsername(pool, first_name, last_name);
     const pw = generatePassword(), hash = await bcrypt.hash(pw, 10);
-    const [{ insertId: tid }] = await pool.query(
-      'INSERT INTO Teacher (first_name, last_name, thai_first_name, thai_last_name, gender, dob, tel, email, department, status) VALUES (?,?,?,?,?,?,?,?,?,?)',
-      [first_name, last_name, n(thai_first_name), n(thai_last_name), n(gender), n(dob), n(tel), email, n(department), 'ACTIVE']
-    );
-    const uname = tn(first_name, last_name);
-    await pool.query(
-      "INSERT INTO User (username, password_hash, role, refID, status, avatar, thai_first_name, thai_last_name, gender, createdAt) VALUES (?,?,'TEACHER',?,'ACTIVE','avatars/avatar-placeholder.jpg',?,?,?,datetime('now'))",
-      [uname, hash, tid, n(thai_first_name), n(thai_last_name), n(gender)]
-    );
-    created.push({ username: uname, password: pw });
+    dbRaw.exec('BEGIN TRANSACTION');
+    try {
+      const [{ insertId: tid }] = await pool.query(
+        'INSERT INTO Teacher (first_name, last_name, thai_first_name, thai_last_name, gender, dob, tel, email, department, status) VALUES (?,?,?,?,?,?,?,?,?,?)',
+        [first_name, last_name, n(thai_first_name), n(thai_last_name), n(gender), n(dob), n(tel), email, n(department), 'ACTIVE']
+      );
+      await pool.query(
+        "INSERT INTO User (username, password_hash, role, refID, status, avatar, thai_first_name, thai_last_name, gender, createdAt) VALUES (?,?,'TEACHER',?,'ACTIVE','avatars/avatar-placeholder.jpg',?,?,?,datetime('now'))",
+        [uname, hash, tid, n(thai_first_name), n(thai_last_name), n(gender)]
+      );
+      dbRaw.exec('COMMIT');
+      created.push({ username: uname, password: pw });
+    } catch (e) {
+      dbRaw.exec('ROLLBACK');
+      throw e;
+    }
   }
   res.json({ success: true, message: `สร้างบัญชีครูผู้สอนสำเร็จ ${created.length} บัญชี`, account: created });
 }));
@@ -127,16 +141,23 @@ router.post('/students/csv', uploadCsv.single('csv'), handle(async (req, res) =>
     if (!first_name || !last_name) continue;
     if (isFutureDob(dob)) continue; // ถ้า dob ไม่ถูกจะ skip]
     const pw = generatePassword(), hash = await bcrypt.hash(pw, 10);
-    const [{ insertId: sid }] = await pool.query(
-      'INSERT INTO Student (first_name, last_name, thai_first_name, thai_last_name, gender, dob, tel, address, email, status) VALUES (?,?,?,?,?,?,?,?,?,?)',
-      [first_name, last_name, n(thai_first_name), n(thai_last_name), n(gender), n(dob), n(tel), n(address || adress), n((email || '').trim()) || null, 'STUDYING']
-    );
     const uname = await createStudentUsername(pool);
-    await pool.query(
-      "INSERT INTO User (username, password_hash, role, refID, status, avatar, thai_first_name, thai_last_name, gender, createdAt) VALUES (?,?,'STUDENT',?,'ACTIVE','avatars/avatar-placeholder.jpg',?,?,?,datetime('now'))",
-      [uname, hash, sid, n(thai_first_name), n(thai_last_name), n(gender)]
-    );
-    created.push({ username: uname, password: pw });
+    dbRaw.exec('BEGIN TRANSACTION');
+    try {
+      const [{ insertId: sid }] = await pool.query(
+        'INSERT INTO Student (first_name, last_name, thai_first_name, thai_last_name, gender, dob, tel, address, email, status) VALUES (?,?,?,?,?,?,?,?,?,?)',
+        [first_name, last_name, n(thai_first_name), n(thai_last_name), n(gender), n(dob), n(tel), n(address || adress), n((email || '').trim()) || null, 'STUDYING']
+      );
+      await pool.query(
+        "INSERT INTO User (username, password_hash, role, refID, status, avatar, thai_first_name, thai_last_name, gender, createdAt) VALUES (?,?,'STUDENT',?,'ACTIVE','avatars/avatar-placeholder.jpg',?,?,?,datetime('now'))",
+        [uname, hash, sid, n(thai_first_name), n(thai_last_name), n(gender)]
+      );
+      dbRaw.exec('COMMIT');
+      created.push({ username: uname, password: pw });
+    } catch (e) {
+      dbRaw.exec('ROLLBACK');
+      throw e;
+    }
   }
   res.json({ success: true, message: `สร้างบัญชีนักเรียนสำเร็จ ${created.length} บัญชี`, account: created });
 }));
@@ -147,16 +168,23 @@ router.post('/students', upload.single('avatar'), handle(async (req, res) => {
   if (!req.file) return bad(res, 'กรุณาอัพโหลดรูปโปรไฟล์');
   if (isFutureDob(b.dob)) return bad(res, 'วันเดือนปีเกิดไม่สามารถเป็นวันในอนาคตได้');
   const pw = generatePassword(), hash = await bcrypt.hash(pw, 10);
-  const [{ insertId: sid }] = await pool.query(
-    'INSERT INTO Student (first_name, last_name, thai_first_name, thai_last_name, gender, dob, tel, address, email, status) VALUES (?,?,?,?,?,?,?,?,?,?)',
-    [b.first_name, b.last_name, n(b.thai_first_name), n(b.thai_last_name), n(b.gender), n(b.dob), n(b.tel), n(b.adress), n((b.email || '').trim()) || null, 'STUDYING']
-  );
-  const uname = await createStudentUsername(pool);
-  await pool.query(
-    "INSERT INTO User (username, password_hash, role, refID, status, avatar, thai_first_name, thai_last_name, gender, createdAt) VALUES (?,?,'STUDENT',?,'ACTIVE',?,?,?,?,datetime('now'))",
-    [uname, hash, sid, `avatars/${req.file.filename}`, n(b.thai_first_name), n(b.thai_last_name), n(b.gender)]
-  );
-  res.json({ success: true, message: `สร้างบัญชี (นักเรียน) - ${uname}:${pw} สำเร็จ!`, password: pw });
+  dbRaw.exec('BEGIN TRANSACTION');
+  try {
+    const uname = await createStudentUsername(pool);
+    const [{ insertId: sid }] = await pool.query(
+      'INSERT INTO Student (first_name, last_name, thai_first_name, thai_last_name, gender, dob, tel, address, email, status) VALUES (?,?,?,?,?,?,?,?,?,?)',
+      [b.first_name, b.last_name, n(b.thai_first_name), n(b.thai_last_name), n(b.gender), n(b.dob), n(b.tel), n(b.adress), n((b.email || '').trim()) || null, 'STUDYING']
+    );
+    await pool.query(
+      "INSERT INTO User (username, password_hash, role, refID, status, avatar, thai_first_name, thai_last_name, gender, createdAt) VALUES (?,?,'STUDENT',?,'ACTIVE',?,?,?,?,datetime('now'))",
+      [uname, hash, sid, `avatars/${req.file.filename}`, n(b.thai_first_name), n(b.thai_last_name), n(b.gender)]
+    );
+    dbRaw.exec('COMMIT');
+    res.json({ success: true, message: `สร้างบัญชี (นักเรียน) - ${uname}:${pw} สำเร็จ!`, password: pw });
+  } catch (e) {
+    dbRaw.exec('ROLLBACK');
+    throw e;
+  }
 }));
 
 router.get('/classrooms', handle(async (_, res) => {
