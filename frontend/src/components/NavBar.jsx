@@ -26,26 +26,42 @@ export default function NavBar() {
   const location = useLocation();
 
   return (
-    <nav>
-      <div className="w-full h-15 bg-[#ff842c] flex justify-between items-center">
-        <div className="items-center flex flex-row gap-4">
-          <Link to={path} className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-            <img className="rounded-full w-[45px] h-[45px] object-cover mx-5" src="/kmitl.svg" alt="school" />
-            <p className="text-xl text-white font-semibold">ระบบบริหารจัดการข้อมูลโรงเรียนคลาสโซลา</p>
+    <nav className="w-full">
+      <div className="w-full h-14 xl:h-16 bg-[#ff842c] flex justify-between items-center px-4 xl:px-6">
+        
+        {/* Left side */}
+        <div className="flex items-center gap-3 xl:gap-4 min-w-0">
+          <Link to={path} className="flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0">
+            <img className="rounded-full w-9 h-9 xl:w-11 xl:h-11 object-cover" src="/kmitl.svg" alt="school" />
+            <p className="text-base xl:text-xl text-white font-semibold whitespace-nowrap">
+              ระบบบริหารจัดการข้อมูลโรงเรียนคลาสโซลา
+            </p>
           </Link>
-          {location.pathname !== path && user.id && <Link to={path} className="text-white/90 hover:text-white text-sm font-medium px-3 py-1.5 rounded hover:bg-white/10">← กลับหน้าแรก</Link>}
+          {location.pathname !== path && user.id && (
+            <Link to={path} className="text-white/90 hover:text-white text-sm font-medium px-3 py-1.5 rounded hover:bg-white/10 shrink-0">
+              ← กลับหน้าแรก
+            </Link>
+          )}
         </div>
+
+        {/* Right side */}
         {user.id && (
-          <div className="flex items-center gap-2 pr-4">
-            <p className="text-xl text-white font-semibold">{name}</p>
-            <button onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('user'); navigate('/login'); }} type="button" className="cursor-pointer mx-5" title="ออกจากระบบ">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="white" className="size-6">
+          <div className="flex items-center gap-2 xl:gap-3 shrink-0 pl-4">
+            <p className="text-base xl:text-xl text-white font-semibold whitespace-nowrap">{name}</p>
+            <button
+              onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('user'); navigate('/login'); }}
+              type="button"
+              className="cursor-pointer hover:opacity-80 transition-opacity"
+              title="ออกจากระบบ"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="white" className="w-5 h-5 xl:w-6 xl:h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
               </svg>
             </button>
-            <img src={avatar} alt="" className="rounded-full w-[45px] h-[45px] object-cover" />
+            <img src={avatar} alt="" className="rounded-full w-9 h-9 xl:w-11 xl:h-11 object-cover" />
           </div>
         )}
+
       </div>
     </nav>
   );
